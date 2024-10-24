@@ -18,50 +18,43 @@
   become: yes
   hosts: Database-Servers
   tasks:
-    - name: Installing Mysql and dependencies
+    - name: Installing Mysql  and dependencies
       package:
-        name: "{{ item }}"
-        state: present
-        update_cache: yes
+       name: "{{item}}"
+       state: present
+       update_cache: yes
       loop:
-        - mysql-server
-        - mysql-client
-        - python3-mysqldb
-        - libmysqlclient-dev
+       - mysql-server
+       - mysql-client 
+       - python3-mysqldb
+       - libmysqlclient-dev
+      become: yes    
 
-    - name: Fail if MySQL installation failed
-      fail:
-        msg: "MySQL installation failed, check the previous task logs."
-      when: "'mysql-server' not in ansible_facts.packages"
-
-    - name: Start and enable mysql service
+    - name: start and enable mysql service
       service:
         name: mysql
         state: started
-        enabled: yes
-      when: ansible_facts.services.mysql is defined
+        enabled: yes    
 
-    - name: Creating mysql user 
+    - name: creating mysql user 
       mysql_user:
-        name: "{{ db_user }}"
-        password: "{{ db_pass }}"
+        name: "{{db_user}}"
+        password: "{{db_pass}}"
         priv: '*.*:ALL'
         host: '%'
         state: present   
 
-    - name: Creating realcloud_db
+    - name: creating realcloud_db
       mysql_db:
-        name: "{{ db_name }}"
+        name: "{{db_name}}"
         state: present    
-
+        
     - name: Enable remote login to mysql
       lineinfile:
-        path: /etc/mysql/mysql.conf.d/mysqld.cnf
-        regexp: '^bind-address'
-        line: 'bind-address = 0.0.0.0'
-        backup: yes
-      when: ansible_facts['os_family'] == "Debian"
-
+         path: /etc/mysql/mysql.conf.d/mysqld.cnf
+         regexp: '^bind-address'
+         line: 'bind-address = 0.0.0.0'
+         backup: yes  
 
 - name: PlayBook 3
   hosts: Apache-Servers
